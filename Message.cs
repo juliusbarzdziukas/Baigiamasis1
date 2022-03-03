@@ -10,7 +10,7 @@ namespace Baigiamasis
     {
         public string UserId;
         public string Msg;
-        public int UsersFunction; //0 none, 1 list, 2 add
-        public List<User> Users;
+        public int UsersFunction; //0 none, 1 list, 2 add, 3 remove
+        public List<User>? Users;
     }
 }

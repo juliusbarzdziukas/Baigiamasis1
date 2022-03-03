@@ -82,6 +82,7 @@ namespace Baigiamasis
                 Client = client
             };
             Clients.Add(con);
+            Message msg;
             try
             {
                 int size;
@@ -91,7 +92,7 @@ namespace Baigiamasis
                     size = await stream.ReadAsync(con.Buffer, Listening.Token);
                     con.User = JsonConvert.DeserializeObject<User>(Encoding.UTF8.GetString(con.Buffer));
                     Users.Add(con.User);
-                    var msg = new Message()
+                    msg = new Message()
                     {
                         Msg = "",
                         UserId = "",
@@ -100,11 +101,8 @@ namespace Baigiamasis
                     };
                     foreach (var client1 in Clients)
                     {
-// For demonstration
-//                        if (client1.Client != client)
-//                        {
-                            await client1.Client.GetStream().WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg)), Listening.Token);
-//                        }
+// For demonstration echo
+                        await client1.Client.GetStream().WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg)), Listening.Token);
                     }
                 }
                 while (client.Connected && !Listening.IsCancellationRequested)
@@ -112,11 +110,8 @@ namespace Baigiamasis
                     size = await stream.ReadAsync(con.Buffer, Listening.Token);
                     foreach (var client1 in Clients)
                     {
-// For demonstration
-//                        if (client1.Client != client)
-//                        {
-                            await client1.Client.GetStream().WriteAsync(con.Buffer.AsMemory(0, size), Listening.Token);
-//                        }
+// For demonstration echo
+                        await client1.Client.GetStream().WriteAsync(con.Buffer.AsMemory(0, size), Listening.Token);
                     }
                 }
             }
@@ -129,6 +124,17 @@ namespace Baigiamasis
             }
             Clients.Remove(con);
             Users.Remove(con.User);
+            msg = new Message()
+            {
+                Msg = "",
+                UserId = "",
+                UsersFunction = 1,
+                Users = Users
+            };
+            foreach (var client1 in Clients)
+            {
+                await client1.Client.GetStream().WriteAsync(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg)), Listening.Token);
+            }
         }
     }
 }

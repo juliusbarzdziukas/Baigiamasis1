@@ -21,12 +21,14 @@ namespace Baigiamasis
         public int BufferSize { get; set; } = 65536;
 
         public User userInfo;
+        public List<User> userList;
 
         public Connection(string iPAddress, int port, User info)
         {
             EndPoint = new IPEndPoint(IPAddress.Parse(iPAddress), port);
             Client = new TcpClient();
             Buffer = new byte[BufferSize];
+            userList = new List<User>();
             userInfo = info;
         }
 
@@ -68,9 +70,10 @@ namespace Baigiamasis
                     UserId = userInfo.Nickname,
                     Msg = s,
                     UsersFunction = 0,
-                    Users = new List<User>()
+                    Users = null
                 };
-                Stream.Write(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg)));
+                var msgs = JsonConvert.SerializeObject(msg);
+                Stream.Write(Encoding.UTF8.GetBytes(msgs), 0, msgs.Length);
             }
             catch (Exception ex)
             {
@@ -86,7 +89,27 @@ namespace Baigiamasis
                 while (Client.Connected && !Listening.IsCancellationRequested)
                 {
                     size = await Stream.ReadAsync(Buffer, Listening.Token);
-                    var msg = JsonConvert.DeserializeObject<Message>(Encoding.UTF8.GetString(Buffer));
+                    var msg = JsonConvert.DeserializeObject<Message>(Encoding.UTF8.GetString(Buffer, 0, size));
+                    switch (msg.UsersFunction)
+                    {
+                        case 0:
+                            break;
+                        case 1:
+                            userList = msg.Users;
+                            break;
+                        case 2:
+                            foreach (var user in msg.Users)
+                            {
+                                userList.Add(user);
+                            }
+                            break;
+                        case 3:
+                            foreach (var user in msg.Users)
+                            {
+                                userList.Remove(user);
+                            }
+                            break;
+                    }
                     T(msg);
                 }
             }

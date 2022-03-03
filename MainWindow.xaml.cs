@@ -67,13 +67,20 @@ namespace Baigiamasis
                                 break;
                             case 1:
                                 Users.Clear();
-                                foreach (var user in msg.Users)
+                                foreach (var user in ConnectionObj.userList)
                                 {
                                     Users.AppendText($"{user.Nickname}\r\n");
                                 }
                                 break;
                             case 2:
                                 foreach (var user in msg.Users)
+                                {
+                                    Users.AppendText($"{user.Nickname}\r\n");
+                                }
+                                break;
+                            case 3:
+                                Users.Clear();
+                                foreach (var user in ConnectionObj.userList)
                                 {
                                     Users.AppendText($"{user.Nickname}\r\n");
                                 }
